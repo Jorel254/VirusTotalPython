@@ -1,3 +1,3 @@
 # VirusTotalPython
 
-Implementation of Analyzer of samples with Python and VirusTotal
+Implementation of Analyzer of samples with Python VirusTotal, Viper and Cuckoo
