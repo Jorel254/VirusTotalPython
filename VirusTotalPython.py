@@ -19,7 +19,7 @@ import psutil
 from tabulate import tabulate
 file_path=""
 CuerrentSystem = platform.system()
-menuprincipal= int (input("Menu de análisis \n 1-Buscar sample \n 2-Analizar mediante hash \n 3-Subir archivo para análisis \n 4-Ver reporte del análisis \n 5-análisis con Viper subir archivo \n 6-Reporte de análisis con Viper\n 7-análisis con Cuckoo  \n 8-Salir \n"))  
+menuprincipal= int (input("Menu de análisis \n 1-Buscar sample \n 2-Analizar mediante hash \n 3-Subir archivo para análisis \n 4-análisis con Viper subir archivo \n 5-Reporte de análisis con Viper\n 6-análisis con Cuckoo  \n 7-Salir \n"))  
 while menuprincipal!=8:
     if menuprincipal ==1:
         #Buscar sample
@@ -100,8 +100,9 @@ while menuprincipal!=8:
             print(tabulate(d, headers=["Name"]))
             analisis=documentText['attributes']['last_analysis_results']
             d=[[]]
-            for item in analisis:
-                Name=item
+            for key in analisis.keys():
+                item=analisis[key]
+                Name=key
                 category=item['category']
                 engine_name=item['engine_name']
                 engine_version=item['engine_version']
@@ -132,68 +133,14 @@ while menuprincipal!=8:
             response_jason= json.loads(response.text)
             documentText = response_jason['data']
             print("ID del escaneo: " + documentText['id']) 
-            Tipo=documentText['attributes']['type_description']
-            Tlsh=documentText['attributes']['tlsh']
+            Tipo=documentText['type']
+            Id=documentText['id']
             print("\n")
-            print("Atributos de la muestra")
-            d=[[Tipo,Tlsh]]
-            print(tabulate(d, headers=["Type","Tlsh"]))
-            trid=documentText['attributes']['trid']
-            d=[[]]
-            for item in trid:
-                file_type=item['file_type']
-                probability=item['probability']
-                d.append([file_type,probability])
-            print("\n")
-            print("Trid")
-            print(tabulate(d, headers=["file_type", "probability"]))
-            names=documentText['attributes']['names']
-            d=[[]]
-            for item in names:
-                Name=item
-                d.append([Name])
-            print("\n")
-            print("Nombres de la muestra")
-            print(tabulate(d, headers=["Name"]))
+            print("Resultado")
+            d=[[Tipo,Id]]
+            print(tabulate(d, headers=["Type","ID"]))
         input()  
     elif menuprincipal == 4:
-        #Ver reporte del análisis
-        print("Inserte el ID del escaneo del cual quiero obtener informacion")   
-        ID=input()
-        url = "https://www.virustotal.com/api/v3/files/" +  ID
-        headers = {"Accept": "application/json"}
-        response = requests.request("GET", url, headers=headers)
-        if (response.status_code != 200):
-            print("Not found sample")
-            input();
-        else:
-            response_jason= json.loads(response.text)
-            documentText = response_jason['data']
-            Tipo=documentText['attributes']['type_description']
-            Tlsh=documentText['attributes']['tlsh']
-            print("\n")
-            print("Atributos de la muestra")
-            d=[[Tipo,Tlsh]]
-            print(tabulate(d, headers=["Type","Tlsh"]))
-            trid=documentText['attributes']['trid']
-            d=[[]]
-            for item in trid:
-                file_type=item['file_type']
-                probability=item['probability']
-                d.append([file_type,probability])
-            print("\n")
-            print("Trid")
-            print(tabulate(d, headers=["file_type", "probability"]))
-            names=documentText['attributes']['names']
-            d=[[]]
-            for item in names:
-                Name=item
-                d.append([Name])
-            print("\n")
-            print("Nombres de la muestra")
-            print(tabulate(d, headers=["Name"]))
-            print(documentText)
-    elif menuprincipal == 5:
         #análisis con Viper subir archivo
         print("análisis con Viper") 
         if CuerrentSystem =="Linux":
@@ -224,7 +171,7 @@ while menuprincipal!=8:
             print(a.communicate(input=('viper\n\ropen -f '+file_path+' \n\rstore\n\info\n\rexit\n\rexit\n\r').encode('utf-8'))[0].decode())   
             a.wait()
         input()
-    elif menuprincipal == 6:
+    elif menuprincipal == 5:
         #Reporte de análisis con Viper
         os.system ("clear") 
         print("Buscar escaneo de Viper") 
@@ -298,7 +245,7 @@ while menuprincipal!=8:
                 print("Escriba una opcion correcta")
             os.system ("clear")
             option= int(input("Menu \n 1- Buscar todos \n 2- Buscar ultima muestra \n 3- Buscar por nombre \n 4- Buscar por md5 \n 5- Salir\n" ))
-    elif menuprincipal ==7:
+    elif menuprincipal ==6:
         os.system ("clear") 
         print("Escaneo con Cuckoo ") 
         option= int(input("Menu \n 1- análisis \n 2- Verificar estatus de la muestra \n 3- Obtener reporte \n 4- Resumen del análisis \n 5- Salir\n" ))
@@ -379,22 +326,14 @@ while menuprincipal!=8:
                 else:
                     response_jason= json.loads(response.text)
                     documentText = response_jason
-                    # Name=documentText['target']['file']['name']
-                    # Sha256=documentText['target']['file']['sha256']
-                    # Tipo=documentText['target']['file']['type']
-                    # Tam=documentText['target']['file']['size']
-                    # print("Info de la muestra")
-                    # d=[[Name,Sha256,Tipo,Tam]]
-                    # print(tabulate(d, headers=["Name", "Sha256", "Type","Size"]))
-                    # families=documentText['signatures']
-                    # d=[[]]
-                    # for item in families:
-                    #     description=item['description']
-                    #     severity=item['severity']
-                    #     d.append([description,severity])
-                    # print("\n")
-                    # print("Signature descriptions")
-                    # print(tabulate(d, headers=["Description", "Severity"]))
+                    Name=documentText['target']['file']['name']
+                    crc32=documentText['target']['file']['crc32']
+                    md5=documentText['target']['file']['md5']
+                    Sha256=documentText['target']['file']['sha256']
+                    Tam=documentText['target']['file']['size']
+                    print("Info de la muestra")
+                    d=[[Name,crc32,md5,Sha256,Tam]]
+                    print(tabulate(d, headers=["Name","crc32","md5","Sha256","Size"]))
                 input()
             else:
                 print("Escriba una opcion correcta")
@@ -403,7 +342,7 @@ while menuprincipal!=8:
     else:
         print("Escriba una opcion correcta")
     os.system ("clear")    
-    menuprincipal= int (input("Menu de análisis \n 1-Buscar sample \n 2-Analizar mediante hash \n 3-Subir archivo para análisis \n 4-Ver reporte del análisis \n 5-análisis con Viper subir archivo \n 6-Reporte de análisis con Viper\n 7-análisis con Cuckoo  \n 8-Salir \n")) 
+    menuprincipal= int (input("Menu de análisis \n 1-Buscar sample \n 2-Analizar mediante hash \n 3-Subir archivo para análisis \n 4-análisis con Viper subir archivo \n 5-Reporte de análisis con Viper\n 6-análisis con Cuckoo  \n 7-Salir \n")) 
 
 
 
